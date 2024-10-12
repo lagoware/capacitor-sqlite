@@ -1,10 +1,15 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { SqlitePlugin } from './definitions';
+import type { SqlitePlugin, StatementSpec } from './definitions';
 
 export class SqliteWeb extends WebPlugin implements SqlitePlugin {
-  async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('ECHO', options);
-    return options;
+  
+  openDb(options: { dbName: string; version: number; upgrades: Record<number, string[]>; }): Promise<void> {
+    throw new Error('Method not implemented.');
   }
+
+  runStatements<T = any>(options: { dbName: string; statementSpecs: StatementSpec[]; }): Promise<{ results: (null | T | T[])[]; }> {
+    throw new Error('Method not implemented.');
+  }
+  
 }
