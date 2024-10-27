@@ -1,8 +1,8 @@
 package com.lagoware.capacitorsqlite;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
+import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import org.json.JSONArray;

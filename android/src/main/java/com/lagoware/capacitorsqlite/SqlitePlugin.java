@@ -1,7 +1,6 @@
 package com.lagoware.capacitorsqlite;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;

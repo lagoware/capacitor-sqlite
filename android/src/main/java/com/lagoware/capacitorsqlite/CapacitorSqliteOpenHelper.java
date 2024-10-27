@@ -1,14 +1,11 @@
 package com.lagoware.capacitorsqlite;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class CapacitorSqliteOpenHelper extends SQLiteOpenHelper  {
     private final HashMap<Integer, String[]> upgrades;

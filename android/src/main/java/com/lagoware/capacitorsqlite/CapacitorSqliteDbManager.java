@@ -1,14 +1,12 @@
 package com.lagoware.capacitorsqlite;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class CapacitorSqliteDbManager {
 
