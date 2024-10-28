@@ -186,4 +186,76 @@ public class SqliteInstrumentedTest {
         assertEquals(1, queryResult.getJSONObject(2).getInt("version"));
         assertEquals(19, queryResult.getJSONObject(2).getString("timestamp").length());
     }
+
+
+    @Test
+    public void transactionHandling() throws Exception {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        HashMap<Integer, String[]> upgrades = new HashMap<>();
+
+        appContext.deleteDatabase("testDb");
+
+        upgrades.put(1, new String[] {
+                """
+            CREATE TABLE IF NOT EXISTS test_data_1 (
+                id TEXT PRIMARY KEY
+            );
+            """,
+                """
+            CREATE TABLE IF NOT EXISTS test_data_2 (
+                id TEXT PRIMARY KEY
+            );
+            """
+        });
+
+        CapacitorSqliteDbManager.openHelper(appContext, "testDb", 1, upgrades).getWritableDatabase();
+
+        Sqlite db = new Sqlite();
+
+        db.runStatements("testDb", new SqliteStatementSpec[]{
+                new SqliteStatementSpec("command", """
+                        INSERT INTO test_data_2 (id)
+                        VALUES (?1)
+                    """, new String[]{"e1"},
+                    true,
+                    true
+                )
+        });
+
+        String errorMessage = null;
+
+        try {
+            db.runStatements("testDb", new SqliteStatementSpec[]{
+                new SqliteStatementSpec("command", """
+                        INSERT INTO test_data_1 (id)
+                        VALUES (?1)
+                    """, new String[]{"a1"},
+                        true,
+                        false
+                ),
+                new SqliteStatementSpec("command", """
+                        INSERT INTO test_data_2 (id)
+                        VALUES (?1)
+                    """, new String[]{"e1"},
+                        false,
+                        true
+                )
+            });
+        } catch (Exception err) {
+            errorMessage = err.getMessage();
+        }
+
+        assertEquals(errorMessage, "UNIQUE constraint failed: test_data_2.id (code 1555)");
+
+        JSONArray entries = db.runStatements("testDb", new SqliteStatementSpec[]{
+            new SqliteStatementSpec("query", """
+                    SELECT * FROM test_data_1
+                """, new String[]{},
+                true,
+                true
+            )
+        });
+
+        assertEquals(0, entries.getJSONArray(0).length());
+    }
 }

@@ -28,25 +28,31 @@ public class Sqlite {
             if (statementSpec.beginsTransaction) {
                 db.beginTransaction();
             }
-
-            switch (statementSpec.type) {
-                case "query":
-                    if (statementSpec.paramSets != null) {
-                        results.put(ii, runQueryStatement(db, statementSpec.statement, statementSpec.paramSets));
-                    } else {
-                        results.put(ii, runQueryStatement(db, statementSpec.statement, statementSpec.params));
-                    }
-                    break;
-                case "command":
-                    if (statementSpec.paramSets != null) {
-                        runCommandStatement(db, statementSpec.statement, statementSpec.paramSets);
-                    } else if (statementSpec.params != null) {
-                        runCommandStatement(db, statementSpec.statement, statementSpec.params);
-                    } else {
-                        runCommandStatement(db, statementSpec.statement);
-                    }
-                    results.put(ii, null);
-                    break;
+            try {
+                switch (statementSpec.type) {
+                    case "query":
+                        if (statementSpec.paramSets != null) {
+                            results.put(ii, runQueryStatement(db, statementSpec.statement, statementSpec.paramSets));
+                        } else {
+                            results.put(ii, runQueryStatement(db, statementSpec.statement, statementSpec.params));
+                        }
+                        break;
+                    case "command":
+                        if (statementSpec.paramSets != null) {
+                            runCommandStatement(db, statementSpec.statement, statementSpec.paramSets);
+                        } else if (statementSpec.params != null) {
+                            runCommandStatement(db, statementSpec.statement, statementSpec.params);
+                        } else {
+                            runCommandStatement(db, statementSpec.statement);
+                        }
+                        results.put(ii, null);
+                        break;
+                }
+            } catch (Exception error) {
+                if (db.inTransaction()) {
+                    db.endTransaction();
+                }
+                throw error;
             }
 
             if (statementSpec.commitsTransaction) {
