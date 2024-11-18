@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -257,5 +258,57 @@ public class SqliteInstrumentedTest {
         });
 
         assertEquals(0, entries.getJSONArray(0).length());
+    }
+
+
+    @Test
+    public void runsUpgrades() throws Exception {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        appContext.deleteDatabase("testDb");
+
+        JSONObject upgrades = new JSONObject("""
+            {
+                "1": ["CREATE TABLE foobar (foo TEXT)"]
+            }
+        """);
+
+        CapacitorSqliteOpenHelper openHelper = CapacitorSqliteDbManager.openHelper(appContext, "testDb", 1, CapacitorSqliteDbManager.jsonObjectToUpgradesMap(upgrades));
+
+        openHelper.getWritableDatabase();
+
+        Sqlite db = new Sqlite();
+
+        String testVal = "wrh\nasdkas\nalkmsad\n";
+
+        JSONArray actual = db.runStatements("testDb", new SqliteStatementSpec[]{
+            new SqliteStatementSpec("command", """
+                INSERT INTO foobar (foo)
+                VALUES (?1)
+            """, new String[]{ testVal }, true, true)
+        });
+
+        openHelper.close();
+
+        JSONObject upgrades2 = new JSONObject("""
+            {
+                "1": ["CREATE TABLE foobar (foo TEXT)"],
+                "2": ["UPDATE foobar SET foo = REPLACE(foo, char(10), '');"]
+            }
+        """);
+
+        CapacitorSqliteOpenHelper openHelper2 = CapacitorSqliteDbManager.openHelper(appContext, "testDb", 2, CapacitorSqliteDbManager.jsonObjectToUpgradesMap(upgrades2));
+
+        openHelper2.getWritableDatabase();
+
+        Sqlite db2 = new Sqlite();
+
+        JSONArray result = db2.runStatements("testDb", new SqliteStatementSpec[]{
+            new SqliteStatementSpec("query", """
+                SELECT foo FROM foobar
+            """, new String[]{}, true, true)
+        });
+
+        assertEquals(testVal.replace("\n", ""), result.getJSONArray(0).getJSONObject(0).getString("foo"));
     }
 }

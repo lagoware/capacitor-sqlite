@@ -1,12 +1,15 @@
 package com.lagoware.capacitorsqlite;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
+
+import io.requery.android.database.sqlite.SQLiteDatabase;
 
 public class CapacitorSqliteDbManager {
 
@@ -23,11 +26,22 @@ public class CapacitorSqliteDbManager {
     }
 
     private final static HashMap<String, CapacitorSqliteOpenHelper> openHelpers = new HashMap<>();
-
+    static String TAG = "Sqlite";
     public static synchronized CapacitorSqliteOpenHelper openHelper(Context context, String dbName, Integer version, HashMap<Integer, String[]> upgrades) {
-        if (!openHelpers.containsKey(dbName)) {
-            openHelpers.put(dbName, new CapacitorSqliteOpenHelper(context, dbName, version, upgrades));
+        Log.i(TAG, "Open helper " + dbName + " " + version);
+        if (openHelpers.containsKey(dbName)) {
+            CapacitorSqliteOpenHelper helper = openHelpers.get(dbName);
+
+            if (helper != null) {
+                SQLiteDatabase db = helper.getWritableDatabase();
+
+                if (db.isOpen() && db.getVersion() == version) {
+                    return helper;
+                }
+            }
         }
+        Log.i(TAG, "Creating new open helper " + dbName + " " + version);
+        openHelpers.put(dbName, new CapacitorSqliteOpenHelper(context, dbName, version, upgrades));
         return openHelpers.get(dbName);
     }
 

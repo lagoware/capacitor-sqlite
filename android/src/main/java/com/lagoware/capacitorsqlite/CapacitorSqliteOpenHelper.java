@@ -1,6 +1,8 @@
 package com.lagoware.capacitorsqlite;
 
 import android.content.Context;
+import android.util.Log;
+
 import io.requery.android.database.sqlite.SQLiteDatabase;
 import io.requery.android.database.sqlite.SQLiteOpenHelper;
 
@@ -8,6 +10,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class CapacitorSqliteOpenHelper extends SQLiteOpenHelper  {
+    String TAG = "CapacitorSqliteOpenHelper";
     private final HashMap<Integer, String[]> upgrades;
 
     public CapacitorSqliteOpenHelper (Context context, String dbName, int version, HashMap<Integer, String[]> upgrades) {
@@ -32,6 +35,8 @@ public class CapacitorSqliteOpenHelper extends SQLiteOpenHelper  {
     }
 
     private void runUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.i(TAG, "Running db upgrade from " + oldVersion + " to " + newVersion);
+
         for (int ii = oldVersion + 1; ii <= newVersion; ii++) {
             if (upgrades.containsKey(ii)) {
                 for (String statement : Objects.requireNonNull(upgrades.get(ii))) {
