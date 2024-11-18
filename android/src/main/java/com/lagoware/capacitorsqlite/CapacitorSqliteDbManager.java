@@ -28,19 +28,23 @@ public class CapacitorSqliteDbManager {
     private final static HashMap<String, CapacitorSqliteOpenHelper> openHelpers = new HashMap<>();
     static String TAG = "Sqlite";
     public static synchronized CapacitorSqliteOpenHelper openHelper(Context context, String dbName, Integer version, HashMap<Integer, String[]> upgrades) {
-        Log.i(TAG, "Open helper " + dbName + " " + version);
+        Log.i(TAG, "openHelper " + dbName + " " + version);
         if (openHelpers.containsKey(dbName)) {
             CapacitorSqliteOpenHelper helper = openHelpers.get(dbName);
 
             if (helper != null) {
                 SQLiteDatabase db = helper.getWritableDatabase();
+                boolean isOpen = db.isOpen();
 
-                if (db.isOpen() && db.getVersion() == version) {
+                if (isOpen && db.getVersion() == version) {
                     return helper;
+                } else if (isOpen) {
+                    Log.i(TAG, "openHelper for " + dbName + " was closed or outdated. Closing.");
+                    helper.close();
                 }
             }
         }
-        Log.i(TAG, "Creating new open helper " + dbName + " " + version);
+        Log.i(TAG, "Creating new openHelper " + dbName + " " + version);
         openHelpers.put(dbName, new CapacitorSqliteOpenHelper(context, dbName, version, upgrades));
         return openHelpers.get(dbName);
     }
