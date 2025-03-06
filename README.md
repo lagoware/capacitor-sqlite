@@ -88,6 +88,6 @@ Construct a type with a set of properties K of type T
 
 #### StatementSpec
 
-<code>{ type: "query"|"command"; statement: string; beginsTransaction?: boolean, commitsTransaction?: boolean, params?: (string | string[])[] }</code>
+<code>{ type: "query"|"command"; statement: string; beginsTransaction?: boolean, commitsTransaction?: boolean, rollsBackTransaction?: boolean, params?: (string | string[])[] }</code>
 
 </docgen-api>
