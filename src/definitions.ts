@@ -3,6 +3,7 @@ export type StatementSpec = {
   statement: string;
   beginsTransaction?: boolean,
   commitsTransaction?: boolean,
+  rollsBackTransaction?: boolean,
   params?: (string | string[])[]
 };
 export type StatementExecReturnVal<T = any> = (null|T[])|(null|T[])[];

@@ -58,6 +58,8 @@ public class Sqlite {
             if (statementSpec.commitsTransaction) {
                 db.setTransactionSuccessful();
                 db.endTransaction();
+            } else if (statementSpec.rollsBackTransaction) {
+                db.endTransaction();
             }
         }
 

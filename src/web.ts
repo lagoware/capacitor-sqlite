@@ -1,6 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { SqlitePlugin, StatementSpec } from './definitions';
+import type { SqlitePlugin, StatementExecReturnVal, StatementSpec } from './definitions';
 
 export class SqliteWeb extends WebPlugin implements SqlitePlugin {
   
@@ -8,8 +8,8 @@ export class SqliteWeb extends WebPlugin implements SqlitePlugin {
     throw new Error('Method not implemented.');
   }
 
-  runStatements<T = any>(options: { dbName: string; statementSpecs: StatementSpec[]; }): Promise<{ results: (null | T | T[])[]; }> {
+  runStatements<T = any>(options: { dbName: string; statementSpecs: StatementSpec[]; }): Promise<{ results: StatementExecReturnVal<T>[] }> {
     throw new Error('Method not implemented.');
   }
-  
+ 
 }

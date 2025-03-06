@@ -41,7 +41,8 @@ public class SqliteStatementSpec {
                 obj.getString("statement"),
                 new String[] {},
                 obj.optBoolean("beginsTransaction"),
-                obj.optBoolean("commitsTransaction")
+                obj.optBoolean("commitsTransaction"),
+                obj.optBoolean("rollsBackTransaction")
             );
         } if (params.optJSONArray(0) != null) {
             return new SqliteStatementSpec(
@@ -49,7 +50,8 @@ public class SqliteStatementSpec {
                 obj.getString("statement"),
                 Utils.jsonArrayTo2dStringArray(params),
                 obj.optBoolean("beginsTransaction"),
-                obj.optBoolean("commitsTransaction")
+                obj.optBoolean("commitsTransaction"),
+                obj.optBoolean("rollsBackTransaction")
             );
         } else {
             return new SqliteStatementSpec(
@@ -57,7 +59,8 @@ public class SqliteStatementSpec {
                 obj.getString("statement"),
                 Utils.jsonArrayToStringArray(params),
                 obj.optBoolean("beginsTransaction"),
-                obj.optBoolean("commitsTransaction")
+                obj.optBoolean("commitsTransaction"),
+                obj.optBoolean("rollsBackTransaction")
             );
         }
     }
@@ -69,6 +72,8 @@ public class SqliteStatementSpec {
     Boolean beginsTransaction = false;
 
     Boolean commitsTransaction = false;
+
+    Boolean rollsBackTransaction = false;
 
     String[][] paramSets;
 
@@ -84,19 +89,21 @@ public class SqliteStatementSpec {
         this.params = params;
     }
 
-    public SqliteStatementSpec(String type, String statement, String[][] paramSets, Boolean beginsTransaction, Boolean commitsTransaction) {
+    public SqliteStatementSpec(String type, String statement, String[][] paramSets, Boolean beginsTransaction, Boolean commitsTransaction, Boolean rollsBackTransaction) {
         this.statement = statement;
         this.type = type;
         this.paramSets = paramSets;
         this.beginsTransaction = beginsTransaction;
         this.commitsTransaction = commitsTransaction;
+        this.rollsBackTransaction = rollsBackTransaction;
     }
 
-    public SqliteStatementSpec(String type, String statement, String[] params, Boolean beginsTransaction, Boolean commitsTransaction) {
+    public SqliteStatementSpec(String type, String statement, String[] params, Boolean beginsTransaction, Boolean commitsTransaction, Boolean rollsBackTransaction) {
         this.statement = statement;
         this.type = type;
         this.params = params;
         this.beginsTransaction = beginsTransaction;
         this.commitsTransaction = commitsTransaction;
+        this.rollsBackTransaction = rollsBackTransaction;
     }
 }

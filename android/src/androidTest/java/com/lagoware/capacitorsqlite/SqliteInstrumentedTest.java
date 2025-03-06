@@ -93,7 +93,7 @@ public class SqliteInstrumentedTest {
             new SqliteStatementSpec("command", """
                 INSERT INTO event_payload (eventId,eventType,data,metadata,streamId,namespace,version)
                 VALUES (?1,?2,?3,?4,?5,?6,?7)
-            """, new String[] { "e1", "FooEvent", "{\"foo\":\"bar\"}", "{\"bing\":\"bong\"}", "s1", "food", "0" }, true, false),
+            """, new String[] { "e1", "FooEvent", "{\"foo\":\"bar\"}", "{\"bing\":\"bong\"}", "s1", "food", "0" }, true, false, false),
 
             new SqliteStatementSpec("query", """
                 INSERT INTO event_stream (id,metadata,namespace)
@@ -135,7 +135,7 @@ public class SqliteInstrumentedTest {
                  ORDER BY streamId, version
                  LIMIT ?4
                  OFFSET ?3)
-            """, new String[] { "food", "s1", "0", "2" }, false, true)
+            """, new String[] { "food", "s1", "0", "2" }, false, true, false)
         });
 
         assertTrue(actual.isNull(0));
@@ -219,7 +219,8 @@ public class SqliteInstrumentedTest {
                         VALUES (?1)
                     """, new String[]{"e1"},
                     true,
-                    true
+                    true,
+                    false
                 )
         });
 
@@ -232,6 +233,7 @@ public class SqliteInstrumentedTest {
                         VALUES (?1)
                     """, new String[]{"a1"},
                         true,
+                        false,
                         false
                 ),
                 new SqliteStatementSpec("command", """
@@ -239,7 +241,8 @@ public class SqliteInstrumentedTest {
                         VALUES (?1)
                     """, new String[]{"e1"},
                         false,
-                        true
+                        true,
+                        false
                 )
             });
         } catch (Exception err) {
@@ -253,11 +256,58 @@ public class SqliteInstrumentedTest {
                     SELECT * FROM test_data_1
                 """, new String[]{},
                 true,
-                true
+                true,
+                false
             )
         });
 
         assertEquals(0, entries.getJSONArray(0).length());
+    }
+
+
+    @Test
+    public void transactionRollbackHandling() throws Exception {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        HashMap<Integer, String[]> upgrades = new HashMap<>();
+
+        appContext.deleteDatabase("testDb");
+
+        upgrades.put(1, new String[] {
+                """
+            CREATE TABLE IF NOT EXISTS test_data_1 (
+                id TEXT PRIMARY KEY
+            );
+            """,
+                """
+            CREATE TABLE IF NOT EXISTS test_data_2 (
+                id TEXT PRIMARY KEY
+            );
+            """
+        });
+
+        CapacitorSqliteDbManager.openHelper(appContext, "testDb", 1, upgrades).getWritableDatabase();
+
+        Sqlite db = new Sqlite();
+
+        db.runStatements("testDb", new SqliteStatementSpec[]{
+                new SqliteStatementSpec("command", """
+                        INSERT INTO test_data_2 (id)
+                        VALUES (?1)
+                    """, new String[]{"e1"},
+                        true,
+                        false,
+                        true
+                )
+        });
+
+        JSONArray result = db.runStatements("testDb", new SqliteStatementSpec[]{
+                new SqliteStatementSpec("query", """
+                        SELECT * FROM test_data_2
+                    """, new String[]{}
+                )
+        });
+
+        assertEquals("[[]]", result.toString());
     }
 
 
@@ -285,7 +335,7 @@ public class SqliteInstrumentedTest {
             new SqliteStatementSpec("command", """
                 INSERT INTO foobar (foo)
                 VALUES (?1)
-            """, new String[]{ testVal }, true, true)
+            """, new String[]{ testVal }, true, true, false)
         });
 
         openHelper.close();
@@ -306,7 +356,7 @@ public class SqliteInstrumentedTest {
         JSONArray result = db2.runStatements("testDb", new SqliteStatementSpec[]{
             new SqliteStatementSpec("query", """
                 SELECT foo FROM foobar
-            """, new String[]{}, true, true)
+            """, new String[]{}, true, true, false)
         });
 
         assertEquals(testVal.replace("\n", ""), result.getJSONArray(0).getJSONObject(0).getString("foo"));
